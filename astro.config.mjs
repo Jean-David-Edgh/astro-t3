@@ -1,4 +1,14 @@
-import { defineConfig } from 'astro/config';
+import { defineConfig } from "astro/config";
 
-// https://astro.build/config
-export default defineConfig({});
+export default defineConfig({
+  vite: {
+    define: {
+      "import.meta.env.PUBLIC_SUPABASE_URL": JSON.stringify(
+        process.env.PUBLIC_SUPABASE_URL
+      ),
+      "import.meta.env.PUBLIC_SUPABASE_ANON_KEY": JSON.stringify(
+        process.env.PUBLIC_SUPABASE_ANON_KEY
+      ),
+    },
+  },
+});
