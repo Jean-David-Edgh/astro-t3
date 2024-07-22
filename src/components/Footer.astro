@@ -1,0 +1,37 @@
+---
+const currentYear = new Date().getFullYear();
+---
+<footer>
+    <p>&copy; {currentYear} Mon Site Astro. Tous droits réservés.</p>
+    <nav>
+        <a href="/">Accueil</a>
+        <a href="/contact">Contact</a>
+    </nav>
+</footer>
+
+<style>
+    footer {
+        margin-top: 2rem;
+        padding: 1rem;
+        background: linear-gradient(rgba(var(--accent-dark), 66%), rgba(var(--accent-dark), 33%));
+        color: white;
+        text-align: center;
+    }
+    nav {
+        margin-top: 1rem;
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+    }
+    nav a {
+        color: white;
+        text-decoration: none;
+        padding: 0.5rem 1rem;
+        border-radius: 4px;
+        background: rgba(var(--accent-light), 12%);
+        transition: background-color 0.3s ease;
+    }
+    nav a:hover {
+        background-color: rgba(var(--accent-light), 30%);
+    }
+</style>
