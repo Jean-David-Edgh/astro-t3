@@ -14,6 +14,8 @@ if (Astro.request.method === 'POST') {
     const password = formData.get('password')?.toString();
     const confirmPassword = formData.get('confirmPassword')?.toString();
 
+console.log('Données du formulaire reçues:', { email, password: '********', confirmPassword: '********' });
+
     if (!email || !password || !confirmPassword) {
       errorMessage = 'Veuillez remplir tous les champs.';
     } else if (password !== confirmPassword) {
