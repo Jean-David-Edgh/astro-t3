@@ -2,22 +2,24 @@
 import Layout from '../layouts/Layout.astro';
 import { supabase } from '../lib/supabase';
 
-console.log("Building page: [nom de la page]");
+console.log("Building page: signup");
 
 let errorMessage = '';
 let successMessage = '';
 
 if (Astro.request.method === 'POST') {
-  const formData = await Astro.request.formData();
-  const email = formData.get('email')?.toString();
-  const password = formData.get('password')?.toString();
-  const confirmPassword = formData.get('confirmPassword')?.toString();
+  try {
+    const formData = await Astro.request.formData();
+    const email = formData.get('email')?.toString();
+    const password = formData.get('password')?.toString();
+    const confirmPassword = formData.get('confirmPassword')?.toString();
 
-  if (email && password && confirmPassword) {
-    if (password !== confirmPassword) {
+    if (!email || !password || !confirmPassword) {
+      errorMessage = 'Veuillez remplir tous les champs.';
+    } else if (password !== confirmPassword) {
       errorMessage = 'Les mots de passe ne correspondent pas.';
     } else {
-      const { error } = await supabase.auth.signUp({ 
+      const { data, error } = await supabase.auth.signUp({ 
         email, 
         password,
         options: {
@@ -26,90 +28,120 @@ if (Astro.request.method === 'POST') {
           }
         }
       });
+
       if (error) {
-        errorMessage = error.message;
-      } else {
+        console.error('Erreur Supabase:', error);
+        errorMessage = `Erreur lors de l'inscription: ${error.message}`;
+      } else if (data) {
         successMessage = 'Inscription réussie. Veuillez vérifier votre email pour confirmer votre compte.';
+      } else {
+        errorMessage = "Une erreur inattendue s'est produite.";
       }
     }
-  } else {
-    errorMessage = 'Veuillez remplir tous les champs.';
+  } catch (error) {
+    console.error('Erreur lors du traitement du formulaire:', error);
+    errorMessage = "Une erreur s'est produite lors du traitement de votre demande.";
   }
 }
 ---
 
 <Layout title="Inscription">
-    <div class="container">
-      <h1>Inscription</h1>
-      {errorMessage && <p class="error">{errorMessage}</p>}
-      {successMessage && <p class="success">{successMessage}</p>}
-      <form method="POST">
-        <label for="email">Email:</label>
-        <input type="email" id="email" name="email" required />
+  <div class="container">
+    <h1>Inscription</h1>
+    {errorMessage && <p class="error">{errorMessage}</p>}
+    {successMessage && <p class="success">{successMessage}</p>}
+    <form method="POST">
+      <label for="email">Email:</label>
+      <input type="email" id="email" name="email" required />
+      
+      <label for="password">Mot de passe:</label>
+      <input type="password" id="password" name="password" required minlength="6" />
+      
+      <label for="confirmPassword">Confirmer le mot de passe:</label>
+      <input type="password" id="confirmPassword" name="confirmPassword" required minlength="6" />
+      
+      <button type="submit">S'inscrire</button>
+    </form>
+    <p class="login-link">Déjà un compte ? <a href="/login">Se connecter</a></p>
+  </div>
+</Layout>
+
+<style>
+  .container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    max-width: 300px;
+    margin: 0 auto;
+    padding: 1rem;
+  }
+  h1 {
+    text-align: center;
+    margin-bottom: 1rem;
+  }
+  form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    width: 100%;
+  }
+  .error, .success {
+    text-align: center;
+    width: 100%;
+  }
+  .error {
+    color: red;
+  }
+  .success {
+    color: green;
+  }
+  input, button {
+    padding: 0.5rem;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    width: 100%;
+    max-width: 300px;
+  }
+  button {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    cursor: pointer;
+    width: auto;
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+  button:hover {
+    background-color: #45a049;
+  }
+  .login-link {
+    text-align: center;
+    margin-top: 1rem;
+  }
+</style>
+
+<script>
+    // Client-side form validation
+    const form = document.querySelector('form');
+    if (form instanceof HTMLFormElement) {
+      form.addEventListener('submit', (e) => {
+        const passwordInput = document.getElementById('password') as HTMLInputElement | null;
+        const confirmPasswordInput = document.getElementById('confirmPassword') as HTMLInputElement | null;
         
-        <label for="password">Mot de passe:</label>
-        <input type="password" id="password" name="password" required minlength="6" />
-        
-        <label for="confirmPassword">Confirmer le mot de passe:</label>
-        <input type="password" id="confirmPassword" name="confirmPassword" required minlength="6" />
-        
-        <button type="submit">S'inscrire</button>
-      </form>
-      <p class="login-link">Déjà un compte ? <a href="/login">Se connecter</a></p>
-    </div>
-  </Layout>
-  
-  <style>
-    .container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      max-width: 300px;
-      margin: 0 auto;
-      padding: 1rem;
+        if (passwordInput && confirmPasswordInput) {
+          const password = passwordInput.value;
+          const confirmPassword = confirmPasswordInput.value;
+          
+          if (password !== confirmPassword) {
+            e.preventDefault();
+            alert('Les mots de passe ne correspondent pas.');
+          }
+        } else {
+          console.error('Les champs de mot de passe n\'ont pas été trouvés.');
+        }
+      });
+    } else {
+      console.error('Le formulaire n\'a pas été trouvé.');
     }
-    h1 {
-      text-align: center;
-      margin-bottom: 1rem;
-    }
-    form {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 1rem;
-      width: 100%;
-    }
-    .error, .success {
-      text-align: center;
-      width: 100%;
-    }
-    .error {
-      color: red;
-    }
-    .success {
-      color: green;
-    }
-    input, button {
-      padding: 0.5rem;
-      border-radius: 4px;
-      border: 1px solid #ccc;
-      width: 100%;
-      max-width: 300px;
-    }
-    button {
-      background-color: #4CAF50;
-      color: white;
-      border: none;
-      cursor: pointer;
-      width: auto;
-      padding-left: 2rem;
-      padding-right: 2rem;
-    }
-    button:hover {
-      background-color: #45a049;
-    }
-    .login-link {
-      text-align: center;
-      margin-top: 1rem;
-    }
-  </style>
+  </script>
